@@ -1,0 +1,6 @@
+# FastF1 cache
+cache/
+
+#venv
+.venv/
+

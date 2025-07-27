@@ -1,0 +1,6 @@
+fastf1 
+jupyter 
+pandas 
+scikit-learn 
+matplotlib 
+seaborn
