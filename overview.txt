@@ -1,0 +1,9 @@
+Driver data: Experience level, qualifying position, past performance at a track.
+
+Track data: Track layout, temperature profile, overtaking difficulty, rain sensitivity.
+
+Session data: FP1–FP3, Qualifying, Race pace.
+
+Weather: Wet/dry status, ambient temperature, track temperature.
+
+Strategy: Pit stop timing, tire choices, undercut/overcut outcomes.
