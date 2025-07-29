@@ -4,3 +4,7 @@ cache/
 #venv
 .venv/
 
+# Data files
+raw_f1_data.csv
+clean_f1_data.csv
+
