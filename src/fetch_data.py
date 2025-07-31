@@ -2,9 +2,9 @@ import fastf1
 import pandas as pd
 import os
 
-fastf1.Cache.enable_cache('E:\Aditya\Coding Programs\ML\Formula-1-Race-Prediction\cache')  # Adjust path as needed
+fastf1.Cache.enable_cache('cache')  # Adjust path as needed
 
-def fetch_race_data(start_year=2022, end_year=2023, output_csv='raw_f1_data.csv'):
+def fetch_race_data(start_year=2022, end_year=2024, output_csv='raw_f1_data.csv'):
     if end_year is None:
         from datetime import datetime
         end_year = datetime.now().year
