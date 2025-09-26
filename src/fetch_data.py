@@ -79,16 +79,6 @@ def fetch_race_data(start_year=2022, end_year=2024, output_csv='raw_f1_data.csv'
                 weather_category = 'Mixed'
             else:
                 weather_category = 'Wet'
-            # Pit stops
-            if hasattr(race, 'pit_stops') and race.pit_stops is not None and not race.pit_stops.empty:
-                pitstops = race.pit_stops.groupby('Driver')['Stop'].count().to_dict()
-            else:
-                pitstops = {}
-            # Stint strategy
-            if hasattr(race, 'stints') and race.stints is not None and not race.stints.empty:
-                stints = race.stints.groupby('Driver')['Compound'].apply(list).to_dict()
-            else:
-                stints = {}
             # Number of race laps
             try:
                 num_laps = race.total_laps
@@ -113,8 +103,6 @@ def fetch_race_data(start_year=2022, end_year=2024, output_csv='raw_f1_data.csv'
                         'TrackTemp': track_temp,
                         'Weather': weather_category,
                         'WeatherCategory': weather_category,
-                        'PitStopCount': pitstops.get(driver, 0),
-                        'StintStrategy': stints.get(driver, []),
                         'NumLaps': num_laps,
                     })
                 except Exception as e:
