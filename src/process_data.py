@@ -90,28 +90,35 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
 
     # --- Map Driver names to FIA numbers ---
     driver_to_fia = {
-        'SAI': 55,
-        'LEC': 16,
-        'VER': 1,
-        'PER': 11,
-        'HAM': 44,
-        'RUS': 63,
-        'NOR': 4,
-        'OCO': 31,
-        'ALO': 14,
-        'GAS': 10,
-        'MAG': 20,
-        'TSU': 22,
-        'BOT': 77,
-        'LAT': 6,
-        'STR': 18,
-        'ZHO': 24,
-        'DEV': 5,
-        'VET': 5,
-        # add others if needed
+        'SAI': 55,   # Carlos Sainz
+        'LEC': 16,   # Charles Leclerc
+        'VER': 1,    # Max Verstappen
+        'PER': 11,   # Sergio Perez
+        'HAM': 44,   # Lewis Hamilton
+        'RUS': 63,   # George Russell
+        'NOR': 4,    # Lando Norris
+        'RIC': 3,    # Daniel Ricciardo
+        'OCO': 31,   # Esteban Ocon
+        'ALO': 14,   # Fernando Alonso
+        'GAS': 10,   # Pierre Gasly
+        'TSU': 22,   # Yuki Tsunoda
+        'BOT': 77,   # Valtteri Bottas
+        'ZHO': 24,   # Zhou Guanyu
+        'VET': 5,    # Sebastian Vettel
+        'STR': 18,   # Lance Stroll
+        'LAT': 6,    # Nicholas Latifi
+        'ALB': 23,   # Alex Albon
+        'MAG': 20,   # Kevin Magnussen
+        'MSC': 47,   # Mick Schumacher
+
+        # One-off/substitute drivers in 2022
+        'DEV': 21,   # Nyck de Vries (Monza, for Albon)
+        'HUL': 27    # Nico Hulkenberg (Bahrain & Saudi, for Vettel)
     }
+
+
+    df = df[df['Round'] != 0]
     df['Driver'] = df['Driver'].map(driver_to_fia)
-    #df['Driver'] = df['Driver'].astype(int)
     # --------------------------------------
 
     # Convert columns
