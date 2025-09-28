@@ -172,6 +172,10 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
     df['FinishingPosition'] = pd.to_numeric(df['FinishingPosition'], errors='coerce')
     df['FinishingPosition'] = df['FinishingPosition'].fillna(-1)
 
+    # Drop pit/stint-related columns
+    df = df.drop(['PitStopCount', 'StintStrategy', 'StintCount'], axis=1, errors='ignore')
+
+
     # Logging improvements
     print("\n" + "="*50)
     print("PROCESSED DATA PREVIEW:")
