@@ -13,13 +13,12 @@ def safe_encode_column(column_data, encoder, unseen_value="Unknown"):
     try:
         return encoder.transform(column_data)
     except ValueError:
-        # Handle unseen categories by mapping them to unseen_value
+        # Handle unseen categories by mapping unseen categories to unseen_value
         encoded = []
         for value in column_data:
             try:
                 encoded.append(encoder.transform([value])[0])
             except ValueError:
-                # Map unseen categories to the "Unknown" label
                 encoded.append(encoder.transform([unseen_value])[0])
         return encoded
 
@@ -30,22 +29,18 @@ def fit_encoders(df, categorical_columns):
     encoders = {}
     encoder_dir = 'encoders'
     
-    # Create encoders directory if it doesn't exist
     if not os.path.exists(encoder_dir):
         os.makedirs(encoder_dir)
     
     for col in categorical_columns:
         if col in df.columns:
             encoder = LabelEncoder()
-            # Fit on non-null values plus "Unknown" for unseen category handling
             non_null_data = df[col].dropna()
             if len(non_null_data) > 0:
-                # Add "Unknown" to the data to ensure it's included as a valid class
                 data_with_unknown = list(non_null_data.unique()) + ["Unknown"]
                 encoder.fit(data_with_unknown)
                 encoders[col] = encoder
                 
-                # Save encoder for future use
                 with open(f'{encoder_dir}/{col}_encoder.pkl', 'wb') as f:
                     pickle.dump(encoder, f)
                 print(f"Fitted and saved encoder for {col} (includes 'Unknown' class)")
@@ -80,13 +75,9 @@ def encode_categorical_features(df, categorical_columns, fit_encoders_flag=True)
     else:
         encoders = load_encoders(categorical_columns)
     
-    # Encode each categorical column
     for col in categorical_columns:
         if col in df.columns and col in encoders:
-            # Fill missing values with 'Unknown' before encoding
             df[col] = df[col].fillna('Unknown')
-            
-            # Encode the column
             df[col] = safe_encode_column(df[col], encoders[col])
             print(f"Encoded {col} with {len(encoders[col].classes_)} unique values")
         elif col in df.columns:
@@ -96,6 +87,33 @@ def encode_categorical_features(df, categorical_columns, fit_encoders_flag=True)
 
 def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.csv', fit_encoders=True):
     df = pd.read_csv(input_csv)
+
+    # --- Map Driver names to FIA numbers ---
+    driver_to_fia = {
+        'SAI': 55,
+        'LEC': 16,
+        'VER': 1,
+        'PER': 11,
+        'HAM': 44,
+        'RUS': 63,
+        'NOR': 4,
+        'OCO': 31,
+        'ALO': 14,
+        'GAS': 10,
+        'MAG': 20,
+        'TSU': 22,
+        'BOT': 77,
+        'LAT': 6,
+        'STR': 18,
+        'ZHO': 24,
+        'DEV': 5,
+        'VET': 5,
+        # add others if needed
+    }
+    df['Driver'] = df['Driver'].map(driver_to_fia)
+    #df['Driver'] = df['Driver'].astype(int)
+    # --------------------------------------
+
     # Convert columns
     df['QualifyingPosition'] = pd.to_numeric(df['QualifyingPosition'], errors='coerce')
     df['GridPosition'] = pd.to_numeric(df['GridPosition'], errors='coerce')
@@ -104,6 +122,7 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
     df['TrackTemp'] = pd.to_numeric(df['TrackTemp'], errors='coerce')
     df['PitStopCount'] = pd.to_numeric(df['PitStopCount'], errors='coerce')
     df['NumLaps'] = pd.to_numeric(df['NumLaps'], errors='coerce')
+
     # Convert StintStrategy from string to list (if needed)
     def parse_stint(x):
         if isinstance(x, list):
@@ -115,8 +134,10 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
                 return []
         return []
     df['StintStrategy'] = df['StintStrategy'].apply(parse_stint)
+
     # Add StintCount column
     df['StintCount'] = df['StintStrategy'].apply(lambda x: len(x) if isinstance(x, list) else 0)
+
     # Fill missing values
     df['QualifyingPosition'] = df['QualifyingPosition'].fillna(-1)
     df['GridPosition'] = df['GridPosition'].fillna(-1)
@@ -127,33 +148,33 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
     df['NumLaps'] = df['NumLaps'].fillna(df['NumLaps'].mean())
     df['Weather'] = df['Weather'].fillna('Unknown')
     df['WeatherCategory'] = df['WeatherCategory'].fillna('Unknown')
-    
-    # Define categorical columns for encoding (removed Weather to avoid redundancy with WeatherCategory)
-    categorical_columns = ['Driver', 'Team', 'Track', 'WeatherCategory']
-    
+
+    # Define categorical columns for encoding
+    categorical_columns = ['Team', 'Track', 'WeatherCategory']  # Driver now numeric, so exclude
+
     # Encode categorical features
     print("Encoding categorical features...")
     df = encode_categorical_features(df, categorical_columns, fit_encoders)
-    
-    # Drop Weather column to avoid redundancy with WeatherCategory
+
+    # Drop Weather column to avoid redundancy
     if 'Weather' in df.columns:
         df = df.drop('Weather', axis=1)
         print("Dropped Weather column (redundant with WeatherCategory)")
-    
-    # Ensure target column (FinishingPosition) remains numeric and is not encoded
+
+    # Ensure target column remains numeric
     df['FinishingPosition'] = pd.to_numeric(df['FinishingPosition'], errors='coerce')
     df['FinishingPosition'] = df['FinishingPosition'].fillna(-1)
-    
-    # Logging improvements - show processed data preview
+
+    # Logging improvements
     print("\n" + "="*50)
     print("PROCESSED DATA PREVIEW:")
     print("="*50)
     print(df.head())
-    
+
     print(f"\nDataset shape: {df.shape}")
     print(f"Categorical columns encoded: {categorical_columns}")
     print(f"Target column: FinishingPosition (numeric)")
-    
+
     # Print unique class counts for each encoded categorical column
     print("\n" + "="*50)
     print("ENCODED CATEGORICAL COLUMNS - UNIQUE CLASS COUNTS:")
@@ -162,8 +183,8 @@ def process_f1_data(input_csv='raw_f1_data.csv', output_csv='new_clean_f1_data.c
         if col in df.columns:
             unique_count = df[col].nunique()
             print(f"{col}: {unique_count} unique classes")
-    
-    # Save XGBoost-ready data
+
+    # Save processed data
     df.to_csv(output_csv, index=False)
     print(f"\nSaved XGBoost-ready data to {output_csv}")
 
